@@ -1,0 +1,121 @@
+
+DECLARE PERCENTAGE_RANGE CONSTANT INT 100;
+
+DECLARE GRADE_AAA CONSTANT CHAR 'A++';
+DECLARE GRADE_AA CONSTANT CHAR 'A+';
+DECLARE GRADE_A CONSTANT CHAR 'A';
+DECLARE GRADE_B CONSTANT CHAR 'B';
+DECLARE GRADE_C CONSTANT CHAR 'C';
+
+DECLARE PERCENT_90 INT 90;
+DECLARE PERCENT_75 INT 75;
+DECLARE PERCENT_60 INT 60;
+DECLARE PERCENT_50 INT 50;
+
+DECLARE MIT_NAME CONSTANT CHAR 'Massachusetts Institute of Technology';
+DECLARE MIT_LABEL CONSTANT CHAR 'MIT';
+DECLARE HARVARD_LABEL CONSTANT CHAR 'HARVARD';
+DECLARE PRINCTON_LABEL CONSTANT CHAR 'PRINCTON';
+DECLARE CALIFORNIA_LABEL CONSTANT CHAR 'CALIFORNIA';
+DECLARE STANFORD_LABEL CONSTANT CHAR 'STANFORD';
+DECLARE JOHN_HOPKINS_LABEL CONSTANT CHAR 'JOHNHOPKINS';
+
+CREATE COMPUTE MODULE Student_Employee_Transformation
+	
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE inputRef REFERENCE TO InputRoot;
+		DECLARE outputRef REFERENCE TO OutputRoot;
+		
+		-- Declaration variables & capture, generate values * 
+		DECLARE vPercentage, marksAchived, marksTotal FLOAT;
+		DECLARE vGrade CHAR; -- A++ | A+ | A | B | C
+		
+		DECLARE vYear INT;
+		SET vYear = EXTRACT(YEAR FROM CURRENT_DATE);
+
+		DECLARE yearOfBirth, vAge INT;
+		DECLARE vTotalStudents INT CARDINALITY(InputRoot.XMLNSC.Applicants.Student[]);
+		DECLARE vCurrentStudents INT 1;
+		
+		WHILE (vCurrentStudents <= vTotalStudents) DO
+			
+			SET yearOfBirth = InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].YearOfBirth;
+			--SET yearOfBirth = CAST(InputRoot.XMLNSC.Applicants.Student.YearOfBirth AS INT);
+			-- Get age by substracting current year - students year of birth
+			SET vAge = vYear - yearOfBirth;
+			
+			SET marksAchived = CAST(InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Marks.Achieved AS FLOAT);
+			SET marksTotal = CAST(InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Marks.OutOf AS FLOAT);
+			
+			-- generate percentsge based on achived marks for total marks
+			SET vPercentage = (marksAchived / marksTotal) * PERCENTAGE_RANGE; 
+			
+			IF (vPercentage > PERCENT_90) THEN
+				SET vGrade = GRADE_AAA;
+			ELSEIF (vPercentage >= PERCENT_75 AND vPercentage <= PERCENT_90) THEN
+				SET vGrade = GRADE_AA;
+			ELSEIF (vPercentage >= PERCENT_60 AND vPercentage < PERCENT_75) THEN
+				SET vGrade = GRADE_A;
+			ELSEIF (vPercentage >= PERCENT_50 AND vPercentage < PERCENT_60) THEN
+				SET vGrade = GRADE_B;
+			ELSE
+				SET vGrade = GRADE_C;
+			END IF;
+			
+			SET Environment.Variables.CurrentStudent = vCurrentStudents;
+			SET Environment.Variables.Grade = vGrade;
+			SET Environment.Variables.Percentage = vPercentage;
+			SET Environment.Variables.Age = vAge;
+			SET Environment.Variables.YearOfBirth = yearOfBirth;
+			
+			-- Routing to various destination 
+			SET OutputLocalEnvironment.Destination.RouterList.DestinationData[1].label = CALIFORNIA_LABEL;
+			CALL CopyEntireMessage();
+			PROPAGATE TO TERMINAL 'out';
+			
+			SET OutputLocalEnvironment.Destination.RouterList.DestinationData[1].label = HARVARD_LABEL;
+			CALL CopyEntireMessage();
+			PROPAGATE TO TERMINAL 'out';
+			
+			SET OutputLocalEnvironment.Destination.RouterList.DestinationData[1].label = MIT_LABEL;
+			CALL CopyEntireMessage();
+			PROPAGATE TO TERMINAL 'out';
+			
+			SET OutputLocalEnvironment.Destination.RouterList.DestinationData[1].label = PRINCTON_LABEL;
+			CALL CopyEntireMessage();
+			PROPAGATE TO TERMINAL 'out';
+			
+			SET OutputLocalEnvironment.Destination.RouterList.DestinationData[1].label = STANFORD_LABEL;
+			CALL CopyEntireMessage();
+			PROPAGATE TO TERMINAL 'out';
+			
+			
+			SET OutputLocalEnvironment.Destination.RouterList.DestinationData[1].label = JOHN_HOPKINS_LABEL;
+			CALL CopyEntireMessage();
+			PROPAGATE TO TERMINAL 'out';
+			
+			SET vCurrentStudents = vCurrentStudents + 1;
+			
+			
+		END WHILE;
+		RETURN FALSE;
+	END;
+	
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;
+
+

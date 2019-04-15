@@ -1,0 +1,94 @@
+<Applicant>
+	<Name>
+		<FirstName>John</FirstName>
+		<LastName>Doe</LastName>
+	</Name>
+	<Age>37</Age>
+	<Gender>Male</Gender>
+	<Contacts>
+		<Phone>+1123123123</Phone>
+		<Email>john.doe@gmail.com</Email>
+	</Contacts>
+	<Course>CSE</Course>
+	<Grade>B</Grade>
+</Applicant>
+=================================
+<Harvard>
+	<Name>
+		<FirstName>John</FirstName>
+		<LastName>Doe</LastName>
+	</Name>
+	<Age>37</Age>
+	<Gender>Male</Gender>
+	<Contacts>
+		<Phone>+1123123123</Phone>
+		<Email>john.doe@gmail.com</Email>
+	</Contacts>
+	<Course>CSE</Course>
+	<Grade>B</Grade>
+</Harvard>
+--------------------
+<Stanford>
+	<Name>
+		<First>John</First>
+		<Last>Doe</Last>
+	</Name>
+	<Contacts>
+		<Phone>+1123123123</Phone>
+		<Email>john.doe@gmail.com</Email>
+	</Contacts>
+	<Grade>B</Grade>
+</Stanford>
+--------------------
+<University>
+	<Name>MIT</Name>
+	<ApplicantName>
+		<Firstname>John</Firstname>
+		<Surname>Doe</Surname>
+	</ApplicantName>
+	<ApplicantContacts>
+		<Phone>+1123123123</Phone>
+		<Email>john.doe@gmail.com</Email>
+	</ApplicantContacts>
+	<ApplicantGrade>B</ApplicantGrade>
+	<ApplicantAge>37</Age>
+	<ApplicantGender>Male</Gender>
+</University>
+---------------------
+{
+  "CaliforniaIT": {
+    "Name": {
+      "FirstName": "John",
+      "LastName": "Doe"
+    },
+    "Age": "37",
+    "Gender": "Male",
+    "Contacts": {
+      "Phone": "+1123123123",
+      "Email": "john.doe@gmail.com"
+    },
+    "Course": "CSE",
+    "Grade": "B"
+  }
+}
+----------------------------
+{
+  "PrincetonEdu": {
+    "FullName": "John Trumph Doe",
+	"Grade": "B",
+    "YoB": "1982",
+    "Sex": "Male",
+    "StudentMail": "john.doe@gmail.com",
+    "CoursePursued": "CSE",
+  }
+}
+
+
+
+
+
+
+
+
+
+

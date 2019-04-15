@@ -1,0 +1,49 @@
+
+
+CREATE COMPUTE MODULE PrincetonUniversity_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot;
+		DECLARE outputRef REFERENCE TO OutputRoot;
+		
+		CALL CopyMessageHeaders();
+		CALL CreatePrincetonMessage(inputRef, 
+									outputRef,
+									Environment.Variables.CurrentStudent, 
+									Environment.Variables.YearOfBirth, 
+									Environment.Variables.Grade);
+		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = PRINCTON_LABEL||'.EDU';
+		RETURN TRUE;
+	END;
+	
+	CREATE PROCEDURE CreatePrincetonMessage(IN InputRoot REFERENCE, 
+											INOUT OutputRoot REFERENCE, 
+											IN vCurrentStudents INT,
+											IN vYearOfBirth INT,
+											IN vGrade CHAR) 
+	BEGIN
+		--IF (NOT EXISTS(OutputRoot.JSON.*[])) THEN
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		--END IF;
+		SET OutputRoot.JSON.Data."Princeton.Edu".FullName = InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Firstname || ' ' || InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Lastname;
+		SET OutputRoot.JSON.Data."Princeton.Edu".Grade = vGrade;
+		SET OutputRoot.JSON.Data."Princeton.Edu".YoB = vYearOfBirth;
+		SET OutputRoot.JSON.Data."Princeton.Edu".Sex = InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Sex;
+		SET OutputRoot.JSON.Data."Princeton.Edu".StudentMail = InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Email;
+		SET OutputRoot.JSON.Data."Princeton.Edu".CoursePursued = InputRoot.XMLNSC.Applicants.Student[vCurrentStudents].Course;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;

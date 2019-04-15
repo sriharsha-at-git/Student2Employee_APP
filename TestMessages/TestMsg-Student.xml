@@ -1,0 +1,13 @@
+<Student>
+	<Firstname>John</Firstname>
+	<Lastname>Doe</Lastname>
+	<YearOfBirth>1982</YearOfBirth>
+	<Phone>+1123123123</Phone>
+	<Email>john.doe@gmail.com</Email>
+	<Sex>Male</Sex>
+	<Course>CSE</Course>
+	<Marks>
+		<Achieved>342</Achieved>
+		<OutOf>500</OutOf>
+	</Marks>
+</Student>

@@ -1,0 +1,52 @@
+
+
+CREATE COMPUTE MODULE HarvardUniversity_Compute
+	
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inputRef REFERENCE TO InputRoot;
+		DECLARE outputRef REFERENCE TO OutputRoot;
+		
+		CALL CopyMessageHeaders();
+		CALL CreateHarvardMessage(inputRef, 
+									outputRef,
+									Environment.Variables.CurrentStudent, 
+									Environment.Variables.Age, 
+									Environment.Variables.Grade);
+		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = HARVARD_LABEL||'.EDU';
+		RETURN TRUE;
+	END;
+	 
+	CREATE PROCEDURE CreateHarvardMessage(	IN inRef REFERENCE, 
+											INOUT outRef REFERENCE, 
+											IN vCurrentStudents INT,
+											IN vAge INT,
+											IN vGrade CHAR) 
+	BEGIN
+		IF (NOT EXISTS(outRef.XMLNSC.*[])) THEN
+			CREATE LASTCHILD OF outRef DOMAIN 'XMLNSC';
+		END IF;
+		SET outRef.XMLNSC.Harvard.Name.FirstName = inRef.XMLNSC.Applicants.Student[vCurrentStudents].Firstname;
+		SET outRef.XMLNSC.Harvard.Name.LastName = inRef.XMLNSC.Applicants.Student[vCurrentStudents].Lastname;
+		SET outRef.XMLNSC.Harvard.Age = vAge;
+		SET outRef.XMLNSC.Harvard.Gender = inRef.XMLNSC.Applicants.Student[vCurrentStudents].Sex;
+		SET outRef.XMLNSC.Harvard.Contacts.Phone = inRef.XMLNSC.Applicants.Student[vCurrentStudents].Phone;
+		SET outRef.XMLNSC.Harvard.Contacts.Email = inRef.XMLNSC.Applicants.Student[vCurrentStudents].Email;
+		SET outRef.XMLNSC.Harvard.Course = inRef.XMLNSC.Applicants.Student[vCurrentStudents].Course;
+		SET outRef.XMLNSC.Harvard.Grade = vGrade;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;
